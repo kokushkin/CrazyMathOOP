@@ -9,6 +9,10 @@ export class Integer {
     return new Integer(this.integer + anotherInt.integer);
   }
 
+  public minus(anotherInt: Integer) {
+    return new Integer(this.integer - anotherInt.integer);
+  }
+
   public times(anotherInt: Integer) {
     return new Integer(this.integer * anotherInt.integer);
   }
@@ -19,6 +23,19 @@ export class Integer {
 
   public divides(anotherInteger: Integer, anotherOneInteger: Integer) {
     return anotherInteger.equal(this.times(anotherOneInteger));
+  }
+
+  public more(anotherInt: Integer) {
+    return this.integer > anotherInt.integer;
+  }
+
+  public less(anotherInt: Integer) {
+    return this.integer < anotherInt.integer;
+  }
+
+  public mod() {
+    if (this.less(new Integer(0))) return new Integer(0).minus(this);
+    return this;
   }
 
   public IfIntegerDividesTwoOthersThemItDividesTheCombination(
@@ -40,21 +57,35 @@ export class Integer {
     return false;
   }
 
-  public theorem1_1_1(n: Integer, m: Integer, allIntegers: Integer[]) {
-    if (m.integer === 0) {
-      return;
+  public theorem1_1_1(n: Integer, m: Integer, all: Integer[]) {
+    if (!m.more(new Integer(0))) {
+      throw new Error("m must be more then 0");
     }
 
-    const getNotNegativeIntegerInForm = (s: Integer) => {
-      const form = n.integer - s.integer * m.integer;
-      if (form < 0) {
-        return;
+    const specialForms: Integer[] = [];
+    all.forEach((s) => {
+      const form = n.minus(s.times(m));
+      if (!form.less(new Integer(0))) {
+        specialForms.push(form);
       }
-      return form;
-    };
-    const setOfIntegersInFrom = allIntegers.map((integer) =>
-      getNotNegativeIntegerInForm(integer)
-    );
+    });
+
+    if (specialForms.length === 0) {
+      throw new Error("Can't be empty. WHY??");
+    }
+
+    const r = specialForms.sort()[0];
+
+    if (!r.less(m.mod())) {
+      if (
+        !(
+          r.minus(m.mod()).more(new Integer(0)) ||
+          r.minus(m.mod()).equal(new Integer(0))
+        )
+      ) {
+        throw new Error("Impossible");
+      }
+    }
 
     return {};
   }
