@@ -45,11 +45,12 @@ function ifDevidesTwoThenDevidesTheirCombination(
 
 function theorem1_1_1(n: number, m: number, all: number[]) {
   /// requirements
-  if (!(m > 0)) {
+  if (m === 0) {
     throw new Error("m must be more then 0");
   }
   /// end of requirements
 
+  /// proof
   const specialForms: number[] = [];
   all.forEach((s) => {
     const form = n - s * m;
@@ -69,11 +70,21 @@ function theorem1_1_1(n: number, m: number, all: number[]) {
   if (!(r < mod(m))) {
     flch(r >= mod(m) && r - mod(m) >= 0);
 
-    flch(
-      r - mod(m) === n - q * m - mod(m) &&
-        n - q * m - mod(m) === n - (q - 1) * m
-    );
-  }
+    const substitution1 = n - q * m - mod(m);
+    const substitution2 = q >= 0 ? n - (q + 1) * m : n - (q - 1) * m;
 
-  return {};
+    flch(r - mod(m) === substitution1 && substitution1 === substitution2);
+
+    if (specialForms.indexOf(substitution2) && substitution2 < r) {
+      throw new Error("Contradiction");
+    }
+
+    return false;
+  }
+  //(r < mod(m))
+  else {
+    // results
+    flch(n === q * m + r && r > 0 && r <= mod(m));
+    return true;
+  }
 }
