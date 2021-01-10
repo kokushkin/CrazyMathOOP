@@ -1,7 +1,20 @@
-function flch(expression: boolean) {
-  if (!expression) {
-    throw new Error("Math doesn't work");
+function logicChain(predicates: any[]) {
+  for (let pred in predicates) {
+    if (!pred) {
+      throw new Error("Wrong conclusion");
+    }
   }
+  return true;
+}
+
+function functionsChain(functions: any[]) {
+  let i = 0;
+  while (i < functions.length - 1) {
+    if (functions[i] !== functions[i + 1]) {
+      throw new Error("Wrong sequence");
+    }
+  }
+  return true;
 }
 
 function mod(n: number) {
@@ -35,10 +48,7 @@ function ifDevidesTwoThenDevidesTheirCombination(
   }
   /// end of requirements
 
-  flch(
-    a * x + b * y === a * r * d + b * s * d &&
-      a * r * d + b * s * d === d * (a * r + b * s)
-  );
+  functionsChain([a * x + b * y, a * r * d + b * s * d, d * (a * r + b * s)]);
 
   return divides(d, a * x + b * y, a * r + b * s) === true;
 }
@@ -65,15 +75,18 @@ function theorem1_1_1(n: number, m: number, all: number[]) {
 
   const r = specialForms.sort()[0];
   const q = -(r - n) / m;
-  flch(r === n - q * m);
+  logicChain([r === n - q * m]);
 
   if (!(r < mod(m))) {
-    flch(r >= mod(m) && r - mod(m) >= 0);
+    logicChain([r >= mod(m), r - mod(m) >= 0]);
 
-    const substitution1 = n - q * m - mod(m);
+    functionsChain([
+      r - mod(m),
+      n - q * m - mod(m),
+      q >= 0 ? n - (q + 1) * m : n - (q - 1) * m
+    ]);
+
     const substitution2 = q >= 0 ? n - (q + 1) * m : n - (q - 1) * m;
-
-    flch(r - mod(m) === substitution1 && substitution1 === substitution2);
 
     if (specialForms.indexOf(substitution2) && substitution2 < r) {
       throw new Error("Contradiction");
@@ -84,7 +97,7 @@ function theorem1_1_1(n: number, m: number, all: number[]) {
   //(r < mod(m))
   else {
     // results
-    flch(n === q * m + r && r > 0 && r <= mod(m));
+    logicChain([n === q * m + r && r > 0 && r <= mod(m)]);
     return true;
   }
 }
