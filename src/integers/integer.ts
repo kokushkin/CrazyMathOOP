@@ -48,56 +48,154 @@ function ifDevidesTwoThenDevidesTheirCombination(
   }
   /// end of requirements
 
-  functionsChain([a * x + b * y, a * r * d + b * s * d, d * (a * r + b * s)]);
+  functionsChain([
+    a * x + b * y,
+    a * (r * d) + b * (s * d),
+    d * (a * r + b * s)
+  ]);
 
   return divides(d, a * x + b * y, a * r + b * s) === true;
 }
 
-function theorem1_1_1(n: number, m: number, all: number[]) {
-  /// requirements
-  if (m === 0) {
-    throw new Error("m must be more then 0");
+class TwoIntegers {
+  n: number;
+  m: number;
+  constructor(n: number, m: number) {
+    if (m === 0) {
+      throw new Error("m must not be = 0");
+    }
+    this.n = n;
+    this.m = m;
   }
-  /// end of requirements
+}
+
+class ReductionModuloResult {
+  n: number;
+  m: number;
+  r: number;
+  q: number;
+  constructor(integers: TwoIntegers, r: number, q: number) {
+    if (integers.n === q * integers.m + r && r >= 0 && r <= mod(integers.m)) {
+      this.n = integers.n;
+      this.m = integers.m;
+      this.r = r;
+      this.q = q;
+    } else {
+      throw new Error("Wrong numbers");
+    }
+  }
+}
+
+class Exist<T> {
+  obj: T;
+  constructor(obj: T) {
+    this.obj = obj;
+  }
+}
+
+class ExistOnlyOne<T> {
+  obj: Exist<T>;
+  constructor(obj: Exist<T>) {
+    this.obj = obj;
+  }
+}
+
+const allNumbers: number[] = [];
+
+type ReductionModuloTheorem = (
+  integers: TwoIntegers
+) => ExistOnlyOne<ReductionModuloResult>;
+
+const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
+  const n = integers.n;
+  const m = integers.m;
 
   /// proof
+  // Proof: Let S be the set of all non-negative integers
+  // expressible in the form N − sm for some integer s.
   const specialForms: number[] = [];
-  all.forEach((s) => {
-    const form = n - s * m;
-    if (form >= 0) {
-      specialForms.push(form);
+  const rform = (s: number) => n - s * m;
+  allNumbers.forEach((s) => {
+    if (rform(s) >= 0) {
+      specialForms.push(rform(s));
     }
   });
 
+  // The set S is non-empty
   if (specialForms.length === 0) {
-    throw new Error("Can't be empty. WHY??");
+    throw new Error("Can't be empty.");
   }
 
+  // , so by well-ordering has a least element r = N − qm.
   const r = specialForms.sort()[0];
-  const q = -(r - n) / m;
-  logicChain([r === n - q * m]);
+  let q = (n - r) / m;
+  rform(r);
 
-  if (!(r < mod(m))) {
+  let existingReductionModulo: Exist<ReductionModuloResult>;
+  // Claim that r < |m|.
+  if (r < mod(m)) {
+    existingReductionModulo = new Exist(
+      new ReductionModuloResult(integers, r, q)
+    );
+  }
+  // If not, then
+  // still r − |m| ≥ 0,
+  else {
     logicChain([r >= mod(m), r - mod(m) >= 0]);
-
+    //  and also
+    // r − |m| = (N − qm) − |m| = N − (q ± 1)m
     functionsChain([
       r - mod(m),
       n - q * m - mod(m),
-      q >= 0 ? n - (q + 1) * m : n - (q - 1) * m
+      m >= 0 ? n - (q + 1) * m : n - (q - 1) * m
     ]);
 
-    const substitution2 = q >= 0 ? n - (q + 1) * m : n - (q - 1) * m;
+    // (with the sign depending on the sign of m) is still in the set S, contradiction
+
+    const substitution2 = m >= 0 ? n - (q + 1) * m : n - (q - 1) * m;
 
     if (specialForms.indexOf(substitution2) && substitution2 < r) {
       throw new Error("Contradiction");
+    } else {
+      throw new Error("Impossible");
     }
+  }
 
-    return false;
+  // For uniqueness, suppose that both N = qm + r and N = q′m + r′. Subtract to find
+  // r − r′ = m · (q′ − q)
+  // Thus, r − r′is a multiple of m. But since −|m| < r − r′ < |m| we have r = r′. And then q = q′.
+
+  const anotherExistingReductionModule = new Exist(
+    new ReductionModuloResult(integers, 3, 5)
+  );
+
+  const _r = anotherExistingReductionModule.obj.r;
+  const _q = anotherExistingReductionModule.obj.q;
+
+  functionsChain([r - _r, m * (_q - q)]);
+  logicChain([
+    0 <= r && r < mod(r) && 0 <= _r && _r < mod(_r),
+    -mod(m) < r - _r && r - _r < mod(m),
+    -mod(m) < m * (_q - q) && m * (_q - q) < mod(m)
+  ]);
+
+  if (m > 0) {
+    logicChain([
+      -mod(m) < m * (_q - q) && m * (_q - q) < mod(m),
+      -mod(m) / m < _q - q && _q - q < mod(m) / m,
+      -1 < m * (_q - q) && _q - q < 1,
+      _q === q
+    ]);
+  } else {
+    logicChain([
+      -mod(m) < m * (_q - q) && m * (_q - q) < mod(m),
+      -mod(m) / m > _q - q && _q - q > mod(m) / m,
+      1 > m * (_q - q) && _q - q > -1,
+      _q === q
+    ]);
   }
-  //(r < mod(m))
-  else {
-    // results
-    logicChain([n === q * m + r && r > 0 && r <= mod(m)]);
-    return true;
-  }
-}
+
+  logicChain([_q === q, r === _r]);
+
+  return new ExistOnlyOne(existingReductionModulo);
+};
