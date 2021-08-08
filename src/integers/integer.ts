@@ -26,11 +26,14 @@ function mod(n: number) {
 }
 
 function divides(
-  oneInteger: number,
-  anotherInteger: number,
-  OneAnotherInteger: number
+  divedend: number, // 4
+  devisor: number // 8
 ) {
-  return anotherInteger === oneInteger * OneAnotherInteger;
+  const oneMore = any(); // 56
+  if (devisor === divedend * oneMore) {
+    return true;
+  }
+  return devisor === divedend * oneMore;
 }
 
 function ifDevidesTwoThenDevidesTheirCombination(
@@ -129,7 +132,7 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
   // , so by well-ordering has a least element r = N − qm.
   const r = specialForms.sort()[0];
   let q = (n - r) / m;
-  rform(r);
+  // rform(r);
 
   let existingReductionModulo: Exist<ReductionModuloResult>;
   // Claim that r < |m|.
@@ -144,17 +147,26 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
     logicChain([r >= mod(m), r - mod(m) >= 0]);
     //  and also
     // r − |m| = (N − qm) − |m| = N − (q ± 1)m
+    const s1 = q + 1;
     functionsChain([
       r - mod(m),
       n - q * m - mod(m),
-      m >= 0 ? n - (q + 1) * m : n - (q - 1) * m
+      m >= 0 ? n - (q + 1) * m : n - (q - 1) * m,
+      m >= 0 ? n - s1 * m : n - s1 * m
     ]);
+
+    // const func_r = (n: number, q: number, m: number) => {
+    //   return n - q * m;
+    // }
+    // const someForm = (r: (n: number, q: number, m: number) => number, m:number) => {
+    //   return r - mod(m);
+    // }
 
     // (with the sign depending on the sign of m) is still in the set S, contradiction
 
-    const substitution2 = m >= 0 ? n - (q + 1) * m : n - (q - 1) * m;
+    const substitution = m >= 0 ? n - (q + 1) * m : n - (q - 1) * m;
 
-    if (specialForms.indexOf(substitution2) && substitution2 < r) {
+    if (specialForms.indexOf(substitution) && substitution < r) {
       throw new Error("Contradiction");
     } else {
       throw new Error("Impossible");
@@ -199,3 +211,75 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
 
   return new ExistOnlyOne(existingReductionModulo);
 };
+
+function any(): number {
+  return Math.floor(Math.random() * 1000000);
+}
+
+
+
+function isPrime(p: number) {
+  const divisor = any();
+  return p > 1 && !isProperDivisor(divisor, p);
+}
+
+// A positive integer n is prime if and only if it is not divisible by any of the integers
+// d with 1 < d ≤ √n.
+
+class PositivePrime {
+  p: number;
+  constructor(p: number) {
+    if (isPrime(p) && p > 0) {
+      this.p = p;
+    } else {
+      throw new Error("Wrong numbers");
+    }
+  }
+}
+
+class NotDivisibleWithLessThanRoot {
+  p: number;
+  constructor(p: number) {
+    const d = any();
+    if (1 < d && d <= Math.sqrt(p) && !divides(d, p)) {
+      this.p = p;
+    } else {
+      throw new Error("Bad luck");
+    }
+  }
+}
+
+function isProperDivisor(d: number, n: number) {
+  return d !== n && d !== -n && d !== 1 && d !== -1 && divides(d, n);
+}
+
+function IfPositivePrimeThenNotDivisibleWithLessThenRoot(
+  prime: PositivePrime
+): NotDivisibleWithLessThanRoot {
+
+  ///sdfsdfsdf
+  ///dsfsdfsdf
+  ///sf sdf 
+  /// to be continued....
+  const d = exist();
+  const e = exist();
+  if (n === d * e && isProperDivisor(d, n) && isProperDivisor(e, n) && d <= e) {
+    functionsChain([
+      d === n / e,
+      n / e <= n / d,
+      d <= n / d,
+      Math.pow(d, 2) <= n,
+      d <= Math.sqrt(n)
+    ]);
+    return new NotDivisibleWithLessThanRoot(prime.p);
+  } else {
+    throw new Error("Bad luck");
+  }
+}
+
+function NotDivisibleWithLessThenRoot IfPositivePrimeThen(
+  prime: PositivePrime
+): NotDivisibleWithLessThanRoot {
+
+
+
