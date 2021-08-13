@@ -254,3 +254,15 @@ function IfPositivePrimeThenNotDivisibleWithLessThenRoot(
   // obvious, because of prime
   return new NotDivisibleWithLessThanRoot(prime.p);
 }
+
+// check if it's prime
+function trialDivision(n: number): boolean {
+  const maxd = Math.sqrt(n);
+
+  for (let i = 2; i <= maxd; i++) {
+    if (BasicDivisionDefinitions.divides(n, i)) {
+      return BasicDivisionDefinitions.isPrime(n) === false;
+    }
+  }
+  return BasicDivisionDefinitions.isPrime(n) === true;
+}
