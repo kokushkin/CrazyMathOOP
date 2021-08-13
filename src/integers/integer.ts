@@ -1,21 +1,6 @@
-function logicChain(predicates: any[]) {
-  for (let pred in predicates) {
-    if (!pred) {
-      throw new Error("Wrong conclusion");
-    }
-  }
-  return true;
-}
-
-function functionsChain(functions: any[]) {
-  let i = 0;
-  while (i < functions.length - 1) {
-    if (functions[i] !== functions[i + 1]) {
-      throw new Error("Wrong sequence");
-    }
-  }
-  return true;
-}
+import { Quantifiers } from "./quantifiers";
+import { BasicDivisionDefinitions } from "./basic-division-definnitions";
+import { Inferences } from "./inferences";
 
 function mod(n: number) {
   if (n < 0) {
@@ -23,17 +8,6 @@ function mod(n: number) {
   } else {
     return n;
   }
-}
-
-function divides(
-  divedend: number, // 4
-  devisor: number // 8
-) {
-  const oneMore = any(); // 56
-  if (devisor === divedend * oneMore) {
-    return true;
-  }
-  return devisor === divedend * oneMore;
 }
 
 function ifDevidesTwoThenDevidesTheirCombination(
@@ -46,18 +20,23 @@ function ifDevidesTwoThenDevidesTheirCombination(
   b: number
 ) {
   /// requirements
-  if (!(divides(d, x, r) && divides(d, y, s))) {
+  if (
+    !(
+      BasicDivisionDefinitions.divides(d, x) &&
+      BasicDivisionDefinitions.divides(d, y)
+    )
+  ) {
     throw new Error("This is initial conditions");
   }
   /// end of requirements
 
-  functionsChain([
+  Inferences.functionsChain([
     a * x + b * y,
     a * (r * d) + b * (s * d),
     d * (a * r + b * s)
   ]);
 
-  return divides(d, a * x + b * y, a * r + b * s) === true;
+  return BasicDivisionDefinitions.divides(d, a * x + b * y) === true;
 }
 
 class TwoIntegers {
@@ -144,11 +123,11 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
   // If not, then
   // still r − |m| ≥ 0,
   else {
-    logicChain([r >= mod(m), r - mod(m) >= 0]);
+    Inferences.logicChain([r >= mod(m), r - mod(m) >= 0]);
     //  and also
     // r − |m| = (N − qm) − |m| = N − (q ± 1)m
     const s1 = q + 1;
-    functionsChain([
+    Inferences.functionsChain([
       r - mod(m),
       n - q * m - mod(m),
       m >= 0 ? n - (q + 1) * m : n - (q - 1) * m,
@@ -184,22 +163,22 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
   const _r = anotherExistingReductionModule.obj.r;
   const _q = anotherExistingReductionModule.obj.q;
 
-  functionsChain([r - _r, m * (_q - q)]);
-  logicChain([
+  Inferences.functionsChain([r - _r, m * (_q - q)]);
+  Inferences.logicChain([
     0 <= r && r < mod(r) && 0 <= _r && _r < mod(_r),
     -mod(m) < r - _r && r - _r < mod(m),
     -mod(m) < m * (_q - q) && m * (_q - q) < mod(m)
   ]);
 
   if (m > 0) {
-    logicChain([
+    Inferences.logicChain([
       -mod(m) < m * (_q - q) && m * (_q - q) < mod(m),
       -mod(m) / m < _q - q && _q - q < mod(m) / m,
       -1 < m * (_q - q) && _q - q < 1,
       _q === q
     ]);
   } else {
-    logicChain([
+    Inferences.logicChain([
       -mod(m) < m * (_q - q) && m * (_q - q) < mod(m),
       -mod(m) / m > _q - q && _q - q > mod(m) / m,
       1 > m * (_q - q) && _q - q > -1,
@@ -207,21 +186,10 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
     ]);
   }
 
-  logicChain([_q === q, r === _r]);
+  Inferences.logicChain([_q === q, r === _r]);
 
   return new ExistOnlyOne(existingReductionModulo);
 };
-
-function any(): number {
-  return Math.floor(Math.random() * 1000000);
-}
-
-
-
-function isPrime(p: number) {
-  const divisor = any();
-  return p > 1 && !isProperDivisor(divisor, p);
-}
 
 // A positive integer n is prime if and only if it is not divisible by any of the integers
 // d with 1 < d ≤ √n.
@@ -229,7 +197,7 @@ function isPrime(p: number) {
 class PositivePrime {
   p: number;
   constructor(p: number) {
-    if (isPrime(p) && p > 0) {
+    if (BasicDivisionDefinitions.isPrime(p) && p > 0) {
       this.p = p;
     } else {
       throw new Error("Wrong numbers");
@@ -240,8 +208,8 @@ class PositivePrime {
 class NotDivisibleWithLessThanRoot {
   p: number;
   constructor(p: number) {
-    const d = any();
-    if (1 < d && d <= Math.sqrt(p) && !divides(d, p)) {
+    const d = Quantifiers.any();
+    if (1 < d && d <= Math.sqrt(p) && !BasicDivisionDefinitions.divides(d, p)) {
       this.p = p;
     } else {
       throw new Error("Bad luck");
@@ -249,37 +217,40 @@ class NotDivisibleWithLessThanRoot {
   }
 }
 
-function isProperDivisor(d: number, n: number) {
-  return d !== n && d !== -n && d !== 1 && d !== -1 && divides(d, n);
-}
+function NotDivisibleWithLessThenRootThenPositivePrime(
+  notDivisblePositive: NotDivisibleWithLessThanRoot
+): PositivePrime {
+  // positive integer:
+  // divistible  => has  a divisor <= sqrt(n)
+  const n = Quantifiers.any();
+  const d = Quantifiers.exist();
+  const e = Quantifiers.exist();
 
-function IfPositivePrimeThenNotDivisibleWithLessThenRoot(
-  prime: PositivePrime
-): NotDivisibleWithLessThanRoot {
-
-  ///sdfsdfsdf
-  ///dsfsdfsdf
-  ///sf sdf 
-  /// to be continued....
-  const d = exist();
-  const e = exist();
-  if (n === d * e && isProperDivisor(d, n) && isProperDivisor(e, n) && d <= e) {
-    functionsChain([
+  if (
+    n > 0 &&
+    n === d * e &&
+    BasicDivisionDefinitions.isProperDivisor(d, n) &&
+    BasicDivisionDefinitions.isProperDivisor(e, n) &&
+    d <= e
+  ) {
+    Inferences.functionsChain([
       d === n / e,
       n / e <= n / d,
       d <= n / d,
       Math.pow(d, 2) <= n,
       d <= Math.sqrt(n)
     ]);
-    return new NotDivisibleWithLessThanRoot(prime.p);
+    // positive integer:
+    //not(divistible) i.e. prime  <= has no divisor <= sqrt(n)
+    return new PositivePrime(notDivisblePositive.p);
   } else {
     throw new Error("Bad luck");
   }
 }
 
-function NotDivisibleWithLessThenRoot IfPositivePrimeThen(
+function IfPositivePrimeThenNotDivisibleWithLessThenRoot(
   prime: PositivePrime
 ): NotDivisibleWithLessThanRoot {
-
-
-
+  // obvious, because of prime
+  return new NotDivisibleWithLessThanRoot(prime.p);
+}
