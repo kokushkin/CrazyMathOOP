@@ -2,11 +2,11 @@ import { Quantifiers } from "./quantifiers";
 
 export class BasicDivisionDefinitions {
   static divides(
-    divedend: number, // 4
-    devisor: number // 8
+    d: number, // 4
+    n: number // 8
   ) {
     const oneMore = Quantifiers.exist(); // 56
-    if (devisor === divedend * oneMore) {
+    if (n === d * oneMore) {
       return true;
     } else {
       return false;

@@ -256,13 +256,51 @@ function IfPositivePrimeThenNotDivisibleWithLessThenRoot(
 }
 
 // check if it's prime
-function trialDivision(n: number): boolean {
+function trialDivisionPrimeTest(n: number): boolean {
   const maxd = Math.sqrt(n);
 
   for (let i = 2; i <= maxd; i++) {
-    if (BasicDivisionDefinitions.divides(n, i)) {
-      return BasicDivisionDefinitions.isPrime(n) === false;
+    if (BasicDivisionDefinitions.divides(i, n)) {
+      return false;
     }
   }
-  return BasicDivisionDefinitions.isPrime(n) === true;
+  return true;
+}
+
+// coprime
+// mutually prime
+function relativelyPrime(m: number, n: number): boolean {
+  const d = Quantifiers.any();
+  if (
+    BasicDivisionDefinitions.divides(d, m) &&
+    BasicDivisionDefinitions.divides(d, n)
+  ) {
+    if (d === -1 || d === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    throw new Error("Bad luck");
+  }
+}
+
+function commonDivisor(d: number, n: number[]) {
+  for (const ni of n) {
+    if (!BasicDivisionDefinitions.divides(d, ni)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function commonMultiple(N: number, n: number[]) {
+  for (const ni of n) {
+    if (!BasicDivisionDefinitions.divides(ni, N)) {
+      return false;
+    }
+  }
+
+  return true;
 }
