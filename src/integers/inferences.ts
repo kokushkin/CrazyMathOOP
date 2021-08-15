@@ -11,10 +11,13 @@ export class Inferences {
   static functionsChain(functions: any[]) {
     let i = 0;
     while (i < functions.length - 1) {
-      if (functions[i] !== functions[i + 1]) {
-        throw new Error("Wrong sequence");
-      }
+      this.True(functions[i] === functions[i + 1]);
     }
-    return true;
+  }
+
+  static True(predicate: boolean) {
+    if (!predicate) {
+      throw new Error("It must be True");
+    }
   }
 }

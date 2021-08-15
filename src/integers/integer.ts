@@ -2,7 +2,7 @@ import { Quantifiers } from "./quantifiers";
 import { BasicDivisionDefinitions } from "./basic-division-definnitions";
 import { Inferences } from "./inferences";
 
-function mod(n: number) {
+function abs(n: number) {
   if (n < 0) {
     return -n;
   } else {
@@ -57,7 +57,7 @@ class ReductionModuloResult {
   r: number;
   q: number;
   constructor(integers: TwoIntegers, r: number, q: number) {
-    if (integers.n === q * integers.m + r && r >= 0 && r <= mod(integers.m)) {
+    if (integers.n === q * integers.m + r && r >= 0 && r <= abs(integers.m)) {
       this.n = integers.n;
       this.m = integers.m;
       this.r = r;
@@ -115,7 +115,7 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
 
   let existingReductionModulo: Exist<ReductionModuloResult>;
   // Claim that r < |m|.
-  if (r < mod(m)) {
+  if (r < abs(m)) {
     existingReductionModulo = new Exist(
       new ReductionModuloResult(integers, r, q)
     );
@@ -123,13 +123,13 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
   // If not, then
   // still r − |m| ≥ 0,
   else {
-    Inferences.logicChain([r >= mod(m), r - mod(m) >= 0]);
+    Inferences.logicChain([r >= abs(m), r - abs(m) >= 0]);
     //  and also
     // r − |m| = (N − qm) − |m| = N − (q ± 1)m
     const s1 = q + 1;
     Inferences.functionsChain([
-      r - mod(m),
-      n - q * m - mod(m),
+      r - abs(m),
+      n - q * m - abs(m),
       m >= 0 ? n - (q + 1) * m : n - (q - 1) * m,
       m >= 0 ? n - s1 * m : n - s1 * m
     ]);
@@ -165,22 +165,22 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
 
   Inferences.functionsChain([r - _r, m * (_q - q)]);
   Inferences.logicChain([
-    0 <= r && r < mod(r) && 0 <= _r && _r < mod(_r),
-    -mod(m) < r - _r && r - _r < mod(m),
-    -mod(m) < m * (_q - q) && m * (_q - q) < mod(m)
+    0 <= r && r < abs(r) && 0 <= _r && _r < abs(_r),
+    -abs(m) < r - _r && r - _r < abs(m),
+    -abs(m) < m * (_q - q) && m * (_q - q) < abs(m)
   ]);
 
   if (m > 0) {
     Inferences.logicChain([
-      -mod(m) < m * (_q - q) && m * (_q - q) < mod(m),
-      -mod(m) / m < _q - q && _q - q < mod(m) / m,
+      -abs(m) < m * (_q - q) && m * (_q - q) < abs(m),
+      -abs(m) / m < _q - q && _q - q < abs(m) / m,
       -1 < m * (_q - q) && _q - q < 1,
       _q === q
     ]);
   } else {
     Inferences.logicChain([
-      -mod(m) < m * (_q - q) && m * (_q - q) < mod(m),
-      -mod(m) / m > _q - q && _q - q > mod(m) / m,
+      -abs(m) < m * (_q - q) && m * (_q - q) < abs(m),
+      -abs(m) / m > _q - q && _q - q > abs(m) / m,
       1 > m * (_q - q) && _q - q > -1,
       _q === q
     ]);
@@ -303,4 +303,132 @@ function commonMultiple(N: number, n: number[]) {
   }
 
   return true;
+}
+
+class NotZero {
+  n: number;
+  constructor(n: number) {
+    if (n > 0) {
+      this.n = n;
+    } else {
+      throw new Error("Bad luck");
+    }
+  }
+}
+
+class PairNotZero {
+  n: NotZero;
+  m: NotZero;
+  constructor(n: NotZero, m: NotZero) {
+    this.n = n;
+    this.m = m;
+  }
+}
+
+//gcd(m, n).
+class GreatestCommonDevisior {
+  pair: PairNotZero;
+  d: number;
+  constructor(pair: PairNotZero, d: number) {
+    const e = Quantifiers.any();
+    if (
+      BasicDivisionDefinitions.divides(d, pair.n.n) &&
+      BasicDivisionDefinitions.divides(d, pair.n.n) &&
+      d > 0 &&
+      BasicDivisionDefinitions.divides(e, pair.n.n) &&
+      BasicDivisionDefinitions.divides(e, pair.m.n) &&
+      BasicDivisionDefinitions.divides(e, d)
+    ) {
+      this.pair = pair;
+      this.d = d;
+    } else {
+      throw new Error("Bad luck");
+    }
+  }
+}
+
+class LeastPositiveIntegerOfTheXYForm {
+  pair: PairNotZero;
+  d: number;
+  constructor(pair: PairNotZero, d: number) {
+    const n = pair.n.n;
+    const m = pair.m.n;
+    const x = Quantifiers.any();
+    const y = Quantifiers.any();
+    const d1 = Quantifiers.any();
+
+    Inferences.True(
+      d > 0 && d1 > 0 && d === x * m + y * n && d1 === x * m + y * n && d <= d1
+    );
+
+    this.pair = pair;
+    this.d = d;
+  }
+}
+
+class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
+  gcd: GreatestCommonDevisior;
+  least: LeastPositiveIntegerOfTheXYForm;
+  constructor(pair: PairNotZero, d: number) {
+    this.gcd = new GreatestCommonDevisior(pair, d);
+    this.least = new LeastPositiveIntegerOfTheXYForm(pair, d);
+  }
+}
+
+function greatesCommonDivisorTheorem(
+  pair: PairNotZero
+): GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
+  const n = pair.n.n;
+  const m = pair.m.n;
+  const D = Quantifiers.exist();
+  const leastPositiveInteger = new LeastPositiveIntegerOfTheXYForm(pair, D);
+  const x0 = Quantifiers.exist();
+  const y0 = Quantifiers.exist();
+
+  Inferences.True(D === x0 * m + y0 * n);
+
+  const d = Quantifiers.any();
+  Inferences.True(
+    BasicDivisionDefinitions.divides(d, n) &&
+      BasicDivisionDefinitions.divides(d, m)
+  );
+
+  const m_ = Quantifiers.exist();
+  const n_ = Quantifiers.exist();
+  Inferences.True(n === n_ * d && m === m_ * d);
+
+  Inferences.functionsChain([
+    D,
+    x0 * m + y0 * n,
+    x0 * (m_ * d) + y0 * (n_ * d),
+    (x0 * m_ + y0 * n_) * d
+  ]);
+
+  Inferences.True(BasicDivisionDefinitions.divides(d, D));
+
+  const reductionModule = reductionModuloTheorem(new TwoIntegers(m, D));
+  const q = reductionModule.obj.obj.q;
+  const r = reductionModule.obj.obj.r;
+  Inferences.True(0 <= r && r < D);
+
+  Inferences.functionsChain([
+    r,
+    m - q * D,
+    m - q * (x0 * m + y0 * n),
+    (1 - q * x0) * m + -q * y0 * n
+  ]);
+
+  const x_ = 1 - q * x0;
+  const y_ = -q * y0;
+  Inferences.True(r === x_ * m + y_ * n);
+
+  Inferences.logicChain([
+    r < D && D === leastPositiveInteger.d,
+    r === 0,
+    BasicDivisionDefinitions.divides(D, m)
+  ]);
+  Inferences.True(BasicDivisionDefinitions.divides(D, n));
+
+  return new GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm(pair, D);
+  // how to tell that it's unique?
 }
