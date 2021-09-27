@@ -43,9 +43,7 @@ class TwoIntegers {
   n: number;
   m: number;
   constructor(n: number, m: number) {
-    if (m === 0) {
-      throw new Error("m must not be = 0");
-    }
+    Inferences.True(m === 0);
     this.n = n;
     this.m = m;
   }
@@ -57,14 +55,13 @@ class ReductionModuloResult {
   r: number;
   q: number;
   constructor(integers: TwoIntegers, r: number, q: number) {
-    if (integers.n === q * integers.m + r && r >= 0 && r <= abs(integers.m)) {
-      this.n = integers.n;
-      this.m = integers.m;
-      this.r = r;
-      this.q = q;
-    } else {
-      throw new Error("Wrong numbers");
-    }
+    Inferences.True(
+      integers.n === q * integers.m + r && r >= 0 && r <= abs(integers.m)
+    );
+    this.n = integers.n;
+    this.m = integers.m;
+    this.r = r;
+    this.q = q;
   }
 }
 
@@ -197,11 +194,8 @@ const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
 class PositivePrime {
   p: number;
   constructor(p: number) {
-    if (BasicDivisionDefinitions.isPrime(p) && p > 0) {
-      this.p = p;
-    } else {
-      throw new Error("Wrong numbers");
-    }
+    Inferences.True(BasicDivisionDefinitions.isPrime(p) && p > 0);
+    this.p = p;
   }
 }
 
@@ -209,11 +203,10 @@ class NotDivisibleWithLessThanRoot {
   p: number;
   constructor(p: number) {
     const d = Quantifiers.any();
-    if (1 < d && d <= Math.sqrt(p) && !BasicDivisionDefinitions.divides(d, p)) {
-      this.p = p;
-    } else {
-      throw new Error("Bad luck");
-    }
+    Inferences.True(
+      1 < d && d <= Math.sqrt(p) && !BasicDivisionDefinitions.divides(d, p)
+    );
+    this.p = p;
   }
 }
 
@@ -308,11 +301,8 @@ function commonMultiple(N: number, n: number[]) {
 class NotZero {
   n: number;
   constructor(n: number) {
-    if (n > 0) {
-      this.n = n;
-    } else {
-      throw new Error("Bad luck");
-    }
+    Inferences.True(n > 0);
+    this.n = n;
   }
 }
 
@@ -331,20 +321,17 @@ class GreatestCommonDivisior {
   d: number;
   constructor(pair: PairNotZero, d: number) {
     const e = Quantifiers.any();
-
-    if (
+    Inferences.True(
       BasicDivisionDefinitions.divides(d, pair.first.n) &&
-      BasicDivisionDefinitions.divides(d, pair.second.n) &&
-      d > 0 &&
-      BasicDivisionDefinitions.divides(e, pair.first.n) &&
-      BasicDivisionDefinitions.divides(e, pair.second.n) &&
-      BasicDivisionDefinitions.divides(e, d)
-    ) {
-      this.pair = pair;
-      this.d = d;
-    } else {
-      throw new Error("Bad luck");
-    }
+        BasicDivisionDefinitions.divides(d, pair.second.n) &&
+        d > 0 &&
+        BasicDivisionDefinitions.divides(e, pair.first.n) &&
+        BasicDivisionDefinitions.divides(e, pair.second.n) &&
+        BasicDivisionDefinitions.divides(e, d)
+    );
+
+    this.pair = pair;
+    this.d = d;
   }
 }
 
