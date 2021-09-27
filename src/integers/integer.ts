@@ -317,26 +317,27 @@ class NotZero {
 }
 
 class PairNotZero {
-  n: NotZero;
-  m: NotZero;
-  constructor(n: NotZero, m: NotZero) {
-    this.n = n;
-    this.m = m;
+  first: NotZero;
+  second: NotZero;
+  constructor(first: NotZero, second: NotZero) {
+    this.first = first;
+    this.second = second;
   }
 }
 
 //gcd(m, n).
-class GreatestCommonDevisior {
+class GreatestCommonDivisior {
   pair: PairNotZero;
   d: number;
   constructor(pair: PairNotZero, d: number) {
     const e = Quantifiers.any();
+
     if (
-      BasicDivisionDefinitions.divides(d, pair.n.n) &&
-      BasicDivisionDefinitions.divides(d, pair.n.n) &&
+      BasicDivisionDefinitions.divides(d, pair.first.n) &&
+      BasicDivisionDefinitions.divides(d, pair.second.n) &&
       d > 0 &&
-      BasicDivisionDefinitions.divides(e, pair.n.n) &&
-      BasicDivisionDefinitions.divides(e, pair.m.n) &&
+      BasicDivisionDefinitions.divides(e, pair.first.n) &&
+      BasicDivisionDefinitions.divides(e, pair.second.n) &&
       BasicDivisionDefinitions.divides(e, d)
     ) {
       this.pair = pair;
@@ -351,8 +352,8 @@ class LeastPositiveIntegerOfTheXYForm {
   pair: PairNotZero;
   d: number;
   constructor(pair: PairNotZero, d: number) {
-    const n = pair.n.n;
-    const m = pair.m.n;
+    const n = pair.first.n;
+    const m = pair.second.n;
     const x = Quantifiers.any();
     const y = Quantifiers.any();
     const d1 = Quantifiers.any();
@@ -367,10 +368,10 @@ class LeastPositiveIntegerOfTheXYForm {
 }
 
 class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
-  gcd: GreatestCommonDevisior;
+  gcd: GreatestCommonDivisior;
   least: LeastPositiveIntegerOfTheXYForm;
   constructor(pair: PairNotZero, d: number) {
-    this.gcd = new GreatestCommonDevisior(pair, d);
+    this.gcd = new GreatestCommonDivisior(pair, d);
     this.least = new LeastPositiveIntegerOfTheXYForm(pair, d);
   }
 }
@@ -378,8 +379,8 @@ class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
 function greatesCommonDivisorTheorem(
   pair: PairNotZero
 ): GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
-  const n = pair.n.n;
-  const m = pair.m.n;
+  const n = pair.first.n;
+  const m = pair.second.n;
   const D = Quantifiers.exist();
   const leastPositiveInteger = new LeastPositiveIntegerOfTheXYForm(pair, D);
   const x0 = Quantifiers.exist();
@@ -396,6 +397,13 @@ function greatesCommonDivisorTheorem(
   const m_ = Quantifiers.exist();
   const n_ = Quantifiers.exist();
   Inferences.True(n === n_ * d && m === m_ * d);
+
+  // it's a bad idea because it would create "infinite" nestings
+  // Inferences.True(
+  //   Quantifiers.existq((m_) =>
+  //     Quantifiers.existq((n_) => n === n_ * d && m === m_ * d)
+  //   )
+  // );
 
   Inferences.functionsChain([
     D,
@@ -422,11 +430,10 @@ function greatesCommonDivisorTheorem(
   const y_ = -q * y0;
   Inferences.True(r === x_ * m + y_ * n);
 
-  Inferences.logicChain([
-    r < D && D === leastPositiveInteger.d,
-    r === 0,
-    BasicDivisionDefinitions.divides(D, m)
-  ]);
+  Inferences.True(r < D && D === leastPositiveInteger.d);
+  Inferences.True(r === 0);
+  Inferences.True(BasicDivisionDefinitions.divides(D, m));
+
   Inferences.True(BasicDivisionDefinitions.divides(D, n));
 
   return new GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm(pair, D);

@@ -15,7 +15,7 @@ export class Inferences {
     }
   }
 
-  static True(predicate: boolean) {
+  static True(predicate: unknown) {
     if (!predicate) {
       throw new Error("It must be True");
     }
