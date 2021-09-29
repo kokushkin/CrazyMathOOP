@@ -335,31 +335,46 @@ class GreatestCommonDivisior {
   }
 }
 
-class LeastPositiveIntegerOfTheXYForm {
-  pair: PairNotZero;
+class XYForm {
+  n: number;
+  m: number;
+  x: number;
+  y: number;
   d: number;
-  constructor(pair: PairNotZero, d: number) {
-    const n = pair.first.n;
-    const m = pair.second.n;
-    const x = Quantifiers.any();
-    const y = Quantifiers.any();
-    const d1 = Quantifiers.any();
+  constructor(n: number, m: number, x: number, y: number, d: number) {
+    Inferences.True(d === x * m + y * n);
 
-    Inferences.True(
-      d > 0 && d1 > 0 && d === x * m + y * n && d1 === x * m + y * n && d <= d1
-    );
-
-    this.pair = pair;
+    this.n = n;
+    this.m = m;
+    this.x = x;
+    this.y = y;
     this.d = d;
   }
 }
 
+function existsTheLeastPositiveXYForm(pair: PairNotZero) {
+  const n = pair.first.n;
+  const m = pair.second.n;
+  const x = Quantifiers.exist();
+  const y = Quantifiers.exist();
+  const x1 = Quantifiers.any();
+  const y1 = Quantifiers.any();
+  const d = x * m + y * n;
+  Inferences.True(d > 0 && d < x1 * m + y1 * n);
+
+  return new XYForm(n, m, x, y, d);
+}
+
+function findTheLeastPositive(numbers: number[]) {
+  return numbers.filter((nmb) => nmb > 0).sort()[0];
+}
+
 class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
   gcd: GreatestCommonDivisior;
-  least: LeastPositiveIntegerOfTheXYForm;
+  leastPositiveForm: XYForm;
   constructor(pair: PairNotZero, d: number) {
     this.gcd = new GreatestCommonDivisior(pair, d);
-    this.least = new LeastPositiveIntegerOfTheXYForm(pair, d);
+    this.least = new XYForm(pair, d);
   }
 }
 
@@ -369,7 +384,8 @@ function greatesCommonDivisorTheorem(
   const n = pair.first.n;
   const m = pair.second.n;
   const D = Quantifiers.exist();
-  const leastPositiveInteger = new LeastPositiveIntegerOfTheXYForm(pair, D);
+  const leastPositiveInteger = existsTheLeastPositiveXYForm(pair);
+
   const x0 = Quantifiers.exist();
   const y0 = Quantifiers.exist();
 
