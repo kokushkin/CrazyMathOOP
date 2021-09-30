@@ -263,7 +263,7 @@ function trialDivisionPrimeTest(n: number): boolean {
 // coprime
 // mutually prime
 function relativelyPrime(m: number, n: number): boolean {
-  const d = Quantifiers.any();
+  const d = Quantifiers.exist();
   if (
     BasicDivisionDefinitions.divides(d, m) &&
     BasicDivisionDefinitions.divides(d, n)
@@ -274,7 +274,25 @@ function relativelyPrime(m: number, n: number): boolean {
       return false;
     }
   } else {
-    throw new Error("Bad luck");
+    return false;
+  }
+}
+
+// n = 10; m=21
+// n = 1o; m= 5;
+function relativelyPrime1(m: number, n: number): boolean {
+  const d = Quantifiers.any(); // d =5
+  if (
+    BasicDivisionDefinitions.divides(d, m) &&
+    BasicDivisionDefinitions.divides(d, n)
+  ) {
+    if (d === -1 || d === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return true;
   }
 }
 
@@ -358,9 +376,11 @@ function existsTheLeastPositiveXYForm(pair: PairNotZero) {
   const x = Quantifiers.exist();
   const y = Quantifiers.exist();
   const x1 = Quantifiers.any();
+  // Inferences.True(x1 !== x);
   const y1 = Quantifiers.any();
+  // Inferences.True(y1 !== y);
   const d = x * m + y * n;
-  Inferences.True(d > 0 && d < x1 * m + y1 * n);
+  Inferences.True(d > 0 && d <= x1 * m + y1 * n);
 
   return new XYForm(n, m, x, y, d);
 }
@@ -378,7 +398,7 @@ class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
   }
 }
 
-function greatesCommonDivisorTheorem(
+function greatestCommonDivisorTheorem(
   pair: PairNotZero
 ): GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
   const n = pair.first.n;
