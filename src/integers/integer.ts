@@ -85,7 +85,7 @@ type ReductionModuloTheorem = (
   integers: TwoIntegers
 ) => ExistOnlyOne<ReductionModuloResult>;
 
-const reductionModuloTheorem: ReductionModuloTheorem = (integers) => {
+const existsReductionModulo: ReductionModuloTheorem = (integers) => {
   const n = integers.n;
   const m = integers.m;
 
@@ -376,87 +376,67 @@ function existsTheLeastPositiveXYForm(pair: PairNotZero) {
   const x = Quantifiers.exist();
   const y = Quantifiers.exist();
   const x1 = Quantifiers.any();
-  // Inferences.True(x1 !== x);
   const y1 = Quantifiers.any();
-  // Inferences.True(y1 !== y);
   const d = x * m + y * n;
   Inferences.True(d > 0 && d <= x1 * m + y1 * n);
 
   return new XYForm(n, m, x, y, d);
 }
 
-function findTheLeastPositive(numbers: number[]) {
-  return numbers.filter((nmb) => nmb > 0).sort()[0];
-}
-
 class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
   gcd: GreatestCommonDivisior;
   leastPositiveForm: XYForm;
-  constructor(pair: PairNotZero, d: number) {
-    this.gcd = new GreatestCommonDivisior(pair, d);
-    this.least = new XYForm(pair, d);
+  constructor(gcd: GreatestCommonDivisior, form: XYForm) {
+    this.gcd = gcd;
+    this.leastPositiveForm = form;
   }
 }
 
-function greatestCommonDivisorTheorem(
+function existsGreatestCommonDivisorInTheLeastPositiveXYForm(
   pair: PairNotZero
 ): GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
   const n = pair.first.n;
   const m = pair.second.n;
-  const D = Quantifiers.exist();
-  const leastPositiveInteger = existsTheLeastPositiveXYForm(pair);
-
-  const x0 = Quantifiers.exist();
-  const y0 = Quantifiers.exist();
-
-  Inferences.True(D === x0 * m + y0 * n);
+  const { x, y, d: D } = existsTheLeastPositiveXYForm(pair);
 
   const d = Quantifiers.any();
   Inferences.True(
     BasicDivisionDefinitions.divides(d, n) &&
       BasicDivisionDefinitions.divides(d, m)
   );
-
   const m_ = Quantifiers.exist();
   const n_ = Quantifiers.exist();
   Inferences.True(n === n_ * d && m === m_ * d);
 
-  // it's a bad idea because it would create "infinite" nestings
-  // Inferences.True(
-  //   Quantifiers.existq((m_) =>
-  //     Quantifiers.existq((n_) => n === n_ * d && m === m_ * d)
-  //   )
-  // );
-
   Inferences.functionsChain([
     D,
-    x0 * m + y0 * n,
-    x0 * (m_ * d) + y0 * (n_ * d),
-    (x0 * m_ + y0 * n_) * d
+    x * m + y * n,
+    x * (m_ * d) + y * (n_ * d),
+    (x * m_ + y * n_) * d
   ]);
 
   Inferences.True(BasicDivisionDefinitions.divides(d, D));
 
-  const reductionModule = reductionModuloTheorem(new TwoIntegers(m, D));
+  const reductionModule = existsReductionModulo(new TwoIntegers(m, D));
   const q = reductionModule.obj.obj.q;
   const r = reductionModule.obj.obj.r;
-  Inferences.True(0 <= r && r < D);
 
   Inferences.functionsChain([
     r,
     m - q * D,
-    m - q * (x0 * m + y0 * n),
-    (1 - q * x0) * m + -q * y0 * n
+    m - q * (x * m + y * n),
+    (1 - q * x) * m + -q * y * n
   ]);
 
-  const x_ = 1 - q * x0;
-  const y_ = -q * y0;
+  const x_ = 1 - q * x;
+  const y_ = -q * y;
   Inferences.True(r === x_ * m + y_ * n);
 
-  Inferences.True(r < D && D === leastPositiveInteger.d);
+  Inferences.True(r < D);
   Inferences.True(r === 0);
   Inferences.True(BasicDivisionDefinitions.divides(D, m));
 
+  // similarly
   Inferences.True(BasicDivisionDefinitions.divides(D, n));
 
   return new GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm(pair, D);
