@@ -1,6 +1,6 @@
-import { Quantifiers } from "./quantifiers";
+import { Q } from "./quantifiers";
 import { BasicDivisionDefinitions } from "./basic-division-definnitions";
-import { Inferences } from "./inferences";
+import { I } from "./inferences";
 
 function abs(n: number) {
   if (n < 0) {
@@ -30,7 +30,7 @@ function ifDevidesTwoThenDevidesTheirCombination(
   }
   /// end of requirements
 
-  Inferences.functionsChain([
+  I.functionsChain([
     a * x + b * y,
     a * (r * d) + b * (s * d),
     d * (a * r + b * s)
@@ -39,60 +39,40 @@ function ifDevidesTwoThenDevidesTheirCombination(
   return BasicDivisionDefinitions.divides(d, a * x + b * y) === true;
 }
 
-class TwoIntegers {
+class NotZeroInteger {
   n: number;
-  m: number;
-  constructor(n: number, m: number) {
-    Inferences.True(m === 0);
+  constructor(n: number) {
+    I.True(n !== 0);
     this.n = n;
-    this.m = m;
   }
 }
 
-class ReductionModuloResult {
+class ReductionModulo {
   n: number;
   m: number;
   r: number;
   q: number;
-  constructor(integers: TwoIntegers, r: number, q: number) {
-    Inferences.True(
-      integers.n === q * integers.m + r && r >= 0 && r <= abs(integers.m)
-    );
-    this.n = integers.n;
-    this.m = integers.m;
+  constructor(n: number, m: number, r: number, q: number) {
+    I.True(n === q * m + r && r >= 0 && r <= abs(m));
+    this.n = n;
+    this.m = m;
     this.r = r;
     this.q = q;
   }
 }
 
-class Exist<T> {
-  obj: T;
-  constructor(obj: T) {
-    this.obj = obj;
-  }
-}
-
-class ExistOnlyOne<T> {
-  obj: Exist<T>;
-  constructor(obj: Exist<T>) {
-    this.obj = obj;
-  }
-}
-
 const allNumbers: number[] = [];
 
-type ReductionModuloTheorem = (
-  integers: TwoIntegers
-) => ExistOnlyOne<ReductionModuloResult>;
-
-const existsReductionModulo: ReductionModuloTheorem = (integers) => {
-  const n = integers.n;
-  const m = integers.m;
-
+const existsOnlyOneReductionModulo = (
+  n: number,
+  mnz: NotZeroInteger
+): ReductionModulo => {
   /// proof
   // Proof: Let S be the set of all non-negative integers
   // expressible in the form N − sm for some integer s.
+  const m = mnz.n;
   const specialForms: number[] = [];
+  const b = n + m;
   const rform = (s: number) => n - s * m;
   allNumbers.forEach((s) => {
     if (rform(s) >= 0) {
@@ -110,21 +90,19 @@ const existsReductionModulo: ReductionModuloTheorem = (integers) => {
   let q = (n - r) / m;
   // rform(r);
 
-  let existingReductionModulo: Exist<ReductionModuloResult>;
+  let existingReductionModulo: ReductionModulo;
   // Claim that r < |m|.
   if (r < abs(m)) {
-    existingReductionModulo = new Exist(
-      new ReductionModuloResult(integers, r, q)
-    );
+    existingReductionModulo = new ReductionModulo(n, m, r, q);
   }
   // If not, then
   // still r − |m| ≥ 0,
   else {
-    Inferences.logicChain([r >= abs(m), r - abs(m) >= 0]);
+    I.logicChain([r >= abs(m), r - abs(m) >= 0]);
     //  and also
     // r − |m| = (N − qm) − |m| = N − (q ± 1)m
     const s1 = q + 1;
-    Inferences.functionsChain([
+    I.functionsChain([
       r - abs(m),
       n - q * m - abs(m),
       m >= 0 ? n - (q + 1) * m : n - (q - 1) * m,
@@ -153,29 +131,26 @@ const existsReductionModulo: ReductionModuloTheorem = (integers) => {
   // r − r′ = m · (q′ − q)
   // Thus, r − r′is a multiple of m. But since −|m| < r − r′ < |m| we have r = r′. And then q = q′.
 
-  const anotherExistingReductionModule = new Exist(
-    new ReductionModuloResult(integers, 3, 5)
-  );
+  const _r = Q.assume(Q.exist());
+  const _q = Q.assume(Q.exist());
+  const anotherExistingReductionModule = new ReductionModulo(n, m, _r, _q);
 
-  const _r = anotherExistingReductionModule.obj.r;
-  const _q = anotherExistingReductionModule.obj.q;
-
-  Inferences.functionsChain([r - _r, m * (_q - q)]);
-  Inferences.logicChain([
+  I.functionsChain([r - _r, m * (_q - q)]);
+  I.logicChain([
     0 <= r && r < abs(r) && 0 <= _r && _r < abs(_r),
     -abs(m) < r - _r && r - _r < abs(m),
     -abs(m) < m * (_q - q) && m * (_q - q) < abs(m)
   ]);
 
   if (m > 0) {
-    Inferences.logicChain([
+    I.logicChain([
       -abs(m) < m * (_q - q) && m * (_q - q) < abs(m),
       -abs(m) / m < _q - q && _q - q < abs(m) / m,
       -1 < m * (_q - q) && _q - q < 1,
       _q === q
     ]);
   } else {
-    Inferences.logicChain([
+    I.logicChain([
       -abs(m) < m * (_q - q) && m * (_q - q) < abs(m),
       -abs(m) / m > _q - q && _q - q > abs(m) / m,
       1 > m * (_q - q) && _q - q > -1,
@@ -183,9 +158,9 @@ const existsReductionModulo: ReductionModuloTheorem = (integers) => {
     ]);
   }
 
-  Inferences.logicChain([_q === q, r === _r]);
+  I.logicChain([_q === q, r === _r]);
 
-  return new ExistOnlyOne(existingReductionModulo);
+  return existingReductionModulo;
 };
 
 // A positive integer n is prime if and only if it is not divisible by any of the integers
@@ -194,7 +169,7 @@ const existsReductionModulo: ReductionModuloTheorem = (integers) => {
 class PositivePrime {
   p: number;
   constructor(p: number) {
-    Inferences.True(BasicDivisionDefinitions.isPrime(p) && p > 0);
+    I.True(BasicDivisionDefinitions.isPrime(p) && p > 0);
     this.p = p;
   }
 }
@@ -202,8 +177,8 @@ class PositivePrime {
 class NotDivisibleWithLessThanRoot {
   p: number;
   constructor(p: number) {
-    const d = Quantifiers.any();
-    Inferences.True(
+    const d = Q.any();
+    I.True(
       1 < d && d <= Math.sqrt(p) && !BasicDivisionDefinitions.divides(d, p)
     );
     this.p = p;
@@ -215,9 +190,9 @@ function NotDivisibleWithLessThenRootThenPositivePrime(
 ): PositivePrime {
   // positive integer:
   // divistible  => has  a divisor <= sqrt(n)
-  const n = Quantifiers.any();
-  const d = Quantifiers.exist();
-  const e = Quantifiers.exist();
+  const n = Q.any();
+  const d = Q.exist();
+  const e = Q.exist();
 
   if (
     n > 0 &&
@@ -226,7 +201,7 @@ function NotDivisibleWithLessThenRootThenPositivePrime(
     BasicDivisionDefinitions.isProperDivisor(e, n) &&
     d <= e
   ) {
-    Inferences.functionsChain([
+    I.functionsChain([
       d === n / e,
       n / e <= n / d,
       d <= n / d,
@@ -263,7 +238,7 @@ function trialDivisionPrimeTest(n: number): boolean {
 // coprime
 // mutually prime
 function relativelyPrime(m: number, n: number): boolean {
-  const d = Quantifiers.exist();
+  const d = Q.exist();
   if (
     BasicDivisionDefinitions.divides(d, m) &&
     BasicDivisionDefinitions.divides(d, n)
@@ -281,7 +256,7 @@ function relativelyPrime(m: number, n: number): boolean {
 // n = 10; m=21
 // n = 1o; m= 5;
 function relativelyPrime1(m: number, n: number): boolean {
-  const d = Quantifiers.any(); // d =5
+  const d = Q.any(); // d =5
   if (
     BasicDivisionDefinitions.divides(d, m) &&
     BasicDivisionDefinitions.divides(d, n)
@@ -316,43 +291,6 @@ function commonMultiple(N: number, n: number[]) {
   return true;
 }
 
-class NotZero {
-  n: number;
-  constructor(n: number) {
-    Inferences.True(n > 0);
-    this.n = n;
-  }
-}
-
-class PairNotZero {
-  first: NotZero;
-  second: NotZero;
-  constructor(first: NotZero, second: NotZero) {
-    this.first = first;
-    this.second = second;
-  }
-}
-
-//gcd(m, n).
-class GreatestCommonDivisior {
-  pair: PairNotZero;
-  d: number;
-  constructor(pair: PairNotZero, d: number) {
-    const e = Quantifiers.any();
-    Inferences.True(
-      BasicDivisionDefinitions.divides(d, pair.first.n) &&
-        BasicDivisionDefinitions.divides(d, pair.second.n) &&
-        d > 0 &&
-        BasicDivisionDefinitions.divides(e, pair.first.n) &&
-        BasicDivisionDefinitions.divides(e, pair.second.n) &&
-        BasicDivisionDefinitions.divides(e, d)
-    );
-
-    this.pair = pair;
-    this.d = d;
-  }
-}
-
 class XYForm {
   n: number;
   m: number;
@@ -360,7 +298,7 @@ class XYForm {
   y: number;
   d: number;
   constructor(n: number, m: number, x: number, y: number, d: number) {
-    Inferences.True(d === x * m + y * n);
+    I.True(d === x * m + y * n);
 
     this.n = n;
     this.m = m;
@@ -370,58 +308,52 @@ class XYForm {
   }
 }
 
-function existsTheLeastPositiveXYForm(pair: PairNotZero) {
-  const n = pair.first.n;
-  const m = pair.second.n;
-  const x = Quantifiers.exist();
-  const y = Quantifiers.exist();
-  const x1 = Quantifiers.any();
-  const y1 = Quantifiers.any();
+function existsOnlyOneTheLeastPositiveXYForm(
+  nnz: NotZeroInteger,
+  mnz: NotZeroInteger
+) {
+  const n = nnz.n;
+  const m = mnz.n;
+  const x1 = Q.any();
+  const y1 = Q.any();
+  const x = Q.exist();
+  const y = Q.exist();
   const d = x * m + y * n;
-  Inferences.True(d > 0 && d <= x1 * m + y1 * n);
+  I.True(d > 0 && d <= x1 * m + y1 * n);
 
   return new XYForm(n, m, x, y, d);
 }
 
-class GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
-  gcd: GreatestCommonDivisior;
-  leastPositiveForm: XYForm;
-  constructor(gcd: GreatestCommonDivisior, form: XYForm) {
-    this.gcd = gcd;
-    this.leastPositiveForm = form;
-  }
-}
+function existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
+  nnz: NotZeroInteger,
+  mnz: NotZeroInteger
+) {
+  const n = nnz.n;
+  const m = mnz.n;
+  const leastPositiveForm = existsOnlyOneTheLeastPositiveXYForm(nnz, mnz);
+  const { x, y, d: D } = leastPositiveForm;
 
-function existsGreatestCommonDivisorInTheLeastPositiveXYForm(
-  pair: PairNotZero
-): GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm {
-  const n = pair.first.n;
-  const m = pair.second.n;
-  const { x, y, d: D } = existsTheLeastPositiveXYForm(pair);
+  const d = Q.any();
+  const m_ = Q.assume(BasicDivisionDefinitions.existsDivision(d, n));
+  const n_ = Q.assume(BasicDivisionDefinitions.existsDivision(d, m));
 
-  const d = Quantifiers.any();
-  Inferences.True(
-    BasicDivisionDefinitions.divides(d, n) &&
-      BasicDivisionDefinitions.divides(d, m)
-  );
-  const m_ = Quantifiers.exist();
-  const n_ = Quantifiers.exist();
-  Inferences.True(n === n_ * d && m === m_ * d);
-
-  Inferences.functionsChain([
+  I.functionsChain([
     D,
     x * m + y * n,
     x * (m_ * d) + y * (n_ * d),
     (x * m_ + y * n_) * d
   ]);
 
-  Inferences.True(BasicDivisionDefinitions.divides(d, D));
+  I.True(BasicDivisionDefinitions.divides(d, D));
 
-  const reductionModule = existsReductionModulo(new TwoIntegers(m, D));
-  const q = reductionModule.obj.obj.q;
-  const r = reductionModule.obj.obj.r;
+  const reductionModule = existsOnlyOneReductionModulo(
+    m,
+    new NotZeroInteger(D)
+  );
+  const q = reductionModule.q;
+  const r = reductionModule.r;
 
-  Inferences.functionsChain([
+  I.functionsChain([
     r,
     m - q * D,
     m - q * (x * m + y * n),
@@ -430,15 +362,15 @@ function existsGreatestCommonDivisorInTheLeastPositiveXYForm(
 
   const x_ = 1 - q * x;
   const y_ = -q * y;
-  Inferences.True(r === x_ * m + y_ * n);
+  I.True(r === x_ * m + y_ * n);
 
-  Inferences.True(r < D);
-  Inferences.True(r === 0);
-  Inferences.True(BasicDivisionDefinitions.divides(D, m));
+  I.True(r < D);
+  I.True(r === 0);
+  I.True(BasicDivisionDefinitions.divides(D, m));
 
   // similarly
-  Inferences.True(BasicDivisionDefinitions.divides(D, n));
+  I.True(BasicDivisionDefinitions.divides(D, n));
 
-  return new GreatestCommonDevisiorAndLeastPositiveIntegerOfTheXYForm(pair, D);
+  return leastPositiveForm;
   // how to tell that it's unique?
 }

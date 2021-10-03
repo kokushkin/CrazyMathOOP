@@ -1,4 +1,4 @@
-export class Inferences {
+export class I {
   static logicChain(predicates: any[]) {
     for (let pred in predicates) {
       if (!pred) {
@@ -15,7 +15,7 @@ export class Inferences {
     }
   }
 
-  static True(predicate: unknown) {
+  static True(predicate: boolean) {
     if (!predicate) {
       throw new Error("It must be True");
     }
