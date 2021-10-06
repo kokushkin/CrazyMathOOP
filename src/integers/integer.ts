@@ -201,13 +201,13 @@ function NotDivisibleWithLessThenRootThenPositivePrime(
     BasicDivisionDefinitions.isProperDivisor(e, n) &&
     d <= e
   ) {
-    I.functionsChain([
+    I.functionsChain(
       d === n / e,
       n / e <= n / d,
       d <= n / d,
       Math.pow(d, 2) <= n,
       d <= Math.sqrt(n)
-    ]);
+    );
     // positive integer:
     //not(divistible) i.e. prime  <= has no divisor <= sqrt(n)
     return new PositivePrime(notDivisblePositive.p);
@@ -332,12 +332,12 @@ function existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
   const m_ = Q.assume(BasicDivisionDefinitions.existsDivision(d, n));
   const n_ = Q.assume(BasicDivisionDefinitions.existsDivision(d, m));
 
-  I.functionsChain([
+  I.functionsChain(
     D,
     x * m + y * n,
     x * (m_ * d) + y * (n_ * d),
     (x * m_ + y * n_) * d
-  ]);
+  );
 
   I.True(BasicDivisionDefinitions.divides(d, D));
 
@@ -348,12 +348,12 @@ function existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
   const q = reductionModule.q;
   const r = reductionModule.r;
 
-  I.functionsChain([
+  I.functionsChain(
     r,
     m - q * D,
     m - q * (x * m + y * n),
     (1 - q * x) * m + -q * y * n
-  ]);
+  );
 
   const x_ = 1 - q * x;
   const y_ = -q * y;
@@ -371,18 +371,20 @@ function existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
 }
 
 function existOnlyOneLeastCommonMultiple(n: number, mnz: NotZeroInteger) {
-  // throw new Error("Not implemented yet");
   const m = mnz.n;
   const {
     d: gcd,
     x: a,
     y: b
   } = existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(n, mnz);
-  const L = (n * m) / gcd;
   const n_ = BasicDivisionDefinitions.existsDivision(gcd, n);
   const m_ = BasicDivisionDefinitions.existsDivision(gcd, m);
+
   I.True(n === n_ * gcd);
   I.True(m === m_ * gcd);
+  const L = (n * m) / gcd;
+  I.functionsChain(L, (n * m) / gcd, (n_ * gcd * m) / gcd, n_ * m);
+  I.functionsChain(L, (n * m) / gcd, (n * m_ * gcd) / gcd, n * m_);
   I.True(L === n_ * m && L === n * m_);
 
   const M = Q.assume(Q.exist());
@@ -390,15 +392,17 @@ function existOnlyOneLeastCommonMultiple(n: number, mnz: NotZeroInteger) {
   const r = Q.assume(BasicDivisionDefinitions.existsDivision(m, M));
 
   I.True(gcd === a * m + b * n);
+  I.functionsChain(gcd, a * m + b * n, a * m_ * gcd + b * n_ * gcd);
   I.True(1 === a * m_ + b * n_);
-  I.functionsChain([
+  I.functionsChain(
     M,
     1 * M,
     (a * m_ + b * n_) * M,
     a * m_ * M + b * n_ * M,
     a * m_ * s * n + b * n_ * r * m,
     (a * s + b * r) * L
-  ]);
+  );
+
   I.True(BasicDivisionDefinitions.multiple(M, L));
 
   return L;

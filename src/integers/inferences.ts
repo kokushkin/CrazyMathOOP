@@ -8,7 +8,7 @@ export class I {
     return true;
   }
 
-  static functionsChain(functions: any[]) {
+  static functionsChain(...functions: any[]) {
     let i = 0;
     while (i < functions.length - 1) {
       this.True(functions[i] === functions[i + 1]);
