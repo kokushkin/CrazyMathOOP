@@ -6,12 +6,16 @@ export class BasicDivisionDefinitions {
     d: number, // 4
     n: number // 8
   ) {
-    const oneMore = Q.exist(); // 56
-    if (n === d * oneMore) {
+    try {
+      BasicDivisionDefinitions.existsDivision(d, n);
       return true;
-    } else {
+    } catch (ex) {
       return false;
     }
+  }
+
+  static multiple(n: number, d: number) {
+    return BasicDivisionDefinitions.divides(d, n);
   }
 
   static existsDivision(

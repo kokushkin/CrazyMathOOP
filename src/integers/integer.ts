@@ -308,11 +308,7 @@ class XYForm {
   }
 }
 
-function existsOnlyOneTheLeastPositiveXYForm(
-  nnz: NotZeroInteger,
-  mnz: NotZeroInteger
-) {
-  const n = nnz.n;
+function existsOnlyOneTheLeastPositiveXYForm(n: number, mnz: NotZeroInteger) {
   const m = mnz.n;
   const x1 = Q.any();
   const y1 = Q.any();
@@ -325,12 +321,11 @@ function existsOnlyOneTheLeastPositiveXYForm(
 }
 
 function existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
-  nnz: NotZeroInteger,
+  n: number,
   mnz: NotZeroInteger
 ) {
-  const n = nnz.n;
   const m = mnz.n;
-  const leastPositiveForm = existsOnlyOneTheLeastPositiveXYForm(nnz, mnz);
+  const leastPositiveForm = existsOnlyOneTheLeastPositiveXYForm(n, mnz);
   const { x, y, d: D } = leastPositiveForm;
 
   const d = Q.any();
@@ -373,4 +368,38 @@ function existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
 
   return leastPositiveForm;
   // how to tell that it's unique?
+}
+
+function existOnlyOneLeastCommonMultiple(n: number, mnz: NotZeroInteger) {
+  // throw new Error("Not implemented yet");
+  const m = mnz.n;
+  const {
+    d: gcd,
+    x: a,
+    y: b
+  } = existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(n, mnz);
+  const L = (n * m) / gcd;
+  const n_ = BasicDivisionDefinitions.existsDivision(gcd, n);
+  const m_ = BasicDivisionDefinitions.existsDivision(gcd, m);
+  I.True(n === n_ * gcd);
+  I.True(m === m_ * gcd);
+  I.True(L === n_ * m && L === n * m_);
+
+  const M = Q.assume(Q.exist());
+  const s = Q.assume(BasicDivisionDefinitions.existsDivision(n, M));
+  const r = Q.assume(BasicDivisionDefinitions.existsDivision(m, M));
+
+  I.True(gcd === a * m + b * n);
+  I.True(1 === a * m_ + b * n_);
+  I.functionsChain([
+    M,
+    1 * M,
+    (a * m_ + b * n_) * M,
+    a * m_ * M + b * n_ * M,
+    a * m_ * s * n + b * n_ * r * m,
+    (a * s + b * r) * L
+  ]);
+  I.True(BasicDivisionDefinitions.multiple(M, L));
+
+  return L;
 }
