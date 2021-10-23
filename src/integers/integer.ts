@@ -166,6 +166,14 @@ const existsOnlyOneReductionModulo = (
 // A positive integer n is prime if and only if it is not divisible by any of the integers
 // d with 1 < d ≤ √n.
 
+class Prime {
+  p: number;
+  constructor(p: number) {
+    I.True(BasicDivisionDefinitions.isPrime(p));
+    this.p = p;
+  }
+}
+
 class PositivePrime {
   p: number;
   constructor(p: number) {
@@ -406,4 +414,103 @@ function existOnlyOneLeastCommonMultiple(n: number, mnz: NotZeroInteger) {
   I.True(BasicDivisionDefinitions.multiple(M, L));
 
   return L;
+}
+
+function devidesProductIfAndOnlyIfDevidesOneOfThem(
+  prime: Prime,
+  a: number,
+  b: number
+) {
+  const p = prime.p;
+
+  if (BasicDivisionDefinitions.divides(p, a)) {
+    return true;
+  } else {
+    const {
+      d: gcd,
+      x: r,
+      y: s
+    } = existsOnlyOneGreatestCommonDivisorInTheLeastPositiveXYForm(
+      p,
+      new NotZeroInteger(a)
+    );
+    I.True(gcd !== p);
+    I.True(gcd === 1);
+    const k = BasicDivisionDefinitions.existsDivision(p, a * b);
+    I.True(k * p === a * b);
+    I.functionsChain(
+      b,
+      b * 1,
+      b * (r * p + s * a),
+      b * r * p + s * a * b,
+      b * r * p + s * k * p,
+      p * (r * b + s * k)
+    );
+    I.True(BasicDivisionDefinitions.divides(p, a));
+    return true;
+  }
+}
+
+class Factorisation {
+  n: number;
+  primes: number[];
+  exponents: number[];
+  constructor(n: number, primes: number[], exponents: number[]) {
+    // TODO: add check I.True
+    this.n = n;
+    this.primes = primes;
+    this.exponents = exponents;
+  }
+}
+
+function existFactorisation(n: number): Factorisation {
+  if (n === 1) {
+    return new Factorisation(1, [1], [1]);
+  }
+
+  // n > 1
+  const n1 = Q.any();
+  Q.assume(I.True(n1 < n));
+  Q.assume(existFactorisation(n1) !== undefined);
+
+  const nUniqueFactorisation = existFactorisation(n);
+  if (nUniqueFactorisation === undefined) {
+    if (BasicDivisionDefinitions.isPrime(n)) {
+      const primeUniqueFactorisation = new Factorisation(n, [n], [1]);
+      I.True(nUniqueFactorisation !== undefined);
+      throw new Error("Contradiction");
+    }
+
+    const x = Q.exist();
+    const y = Q.exist();
+    I.True(
+      BasicDivisionDefinitions.isProperDivisor(x, n) &&
+        BasicDivisionDefinitions.isProperDivisor(y, n)
+    );
+    I.True(n === x * y);
+    I.True(x < n);
+    I.True(y < n);
+    const uniqueFactorisationOfX = existFactorisation(x);
+    const uniqueFactorisationOfY = existFactorisation(y);
+    I.True(
+      nUniqueFactorisation === uniqueFactorisationOfX * uniqueFactorisationOfY
+    );
+    throw new Error("Contradiction");
+  }
+
+  I.True(nUniqueFactorisation !== undefined);
+
+  return nUniqueFactorisation;
+}
+
+function existUniqueFactorisation(n: number): Factorisation {
+  const qFactorisation = existFactorisation(n);
+  const pFactorisation = existFactorisation(n);
+  Q.assume(qFactorisation !== pFactorisation);
+
+  const q1 = qFactorisation.primes[0];
+  I.True(BasicDivisionDefinitions.divides(q1, qFactorisation.n));
+  I.True(BasicDivisionDefinitions.divides(q1, pFactorisation.n));
+
+  // devidesProductIfAndOnlyIfDevidesOneOfThem(q1);
 }
