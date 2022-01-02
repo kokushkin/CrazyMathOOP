@@ -416,7 +416,7 @@ function existOnlyOneLeastCommonMultiple(n: number, mnz: NotZeroInteger) {
   return L;
 }
 
-function devidesProductIfAndOnlyIfDevidesOneOfThem(
+function existOneDividesOneOfTheFactorsIFFDividesProduct(
   prime: Prime,
   a: number,
   b: number
@@ -424,7 +424,7 @@ function devidesProductIfAndOnlyIfDevidesOneOfThem(
   const p = prime.p;
 
   if (BasicDivisionDefinitions.divides(p, a)) {
-    return true;
+    return a;
   } else {
     const {
       d: gcd,
@@ -446,8 +446,8 @@ function devidesProductIfAndOnlyIfDevidesOneOfThem(
       b * r * p + s * k * p,
       p * (r * b + s * k)
     );
-    I.True(BasicDivisionDefinitions.divides(p, a));
-    return true;
+    I.True(BasicDivisionDefinitions.divides(p, b));
+    return b;
   }
 }
 
@@ -456,10 +456,44 @@ class Factorisation {
   primes: number[];
   exponents: number[];
   constructor(n: number, primes: number[], exponents: number[]) {
-    // TODO: add check I.True
+    for (let i = 0; i < primes.length - 1; i++) {
+      if (primes[i] >= primes[i + 1]) {
+        throw new Error("Primes must be ordered");
+      }
+    }
     this.n = n;
     this.primes = primes;
     this.exponents = exponents;
+  }
+
+  //
+  compose(fac: Factorisation) {
+    const primes: number[] = Array.from(
+      new Set(this.primes.concat(fac.primes))
+    );
+    const exponents: number[] = [];
+    for (let prime of primes) {
+      let exponent = 0;
+      if (this.exponents[this.primes.indexOf(prime)]) {
+        exponent += this.exponents[this.primes.indexOf(prime)];
+      }
+      if (fac.exponents[fac.primes.indexOf(prime)]) {
+        exponent += fac.exponents[fac.primes.indexOf(prime)];
+      }
+      exponents.push(exponent);
+    }
+
+    return new Factorisation(this.n * fac.n, primes, exponents);
+  }
+
+  reduce() {
+    if (this.exponents[0] > 1) {
+      this.exponents[0] = --this.exponents[0];
+    } else {
+      this.primes.shift();
+      this.exponents.shift();
+    }
+    this.n = this.n / this.primes[0];
   }
 }
 
@@ -467,18 +501,17 @@ function existFactorisation(n: number): Factorisation {
   if (n === 1) {
     return new Factorisation(1, [1], [1]);
   }
-
   // n > 1
   const n1 = Q.any();
   Q.assume(I.True(n1 < n));
   Q.assume(existFactorisation(n1) !== undefined);
 
-  const nUniqueFactorisation = existFactorisation(n);
-  if (nUniqueFactorisation === undefined) {
+  try {
+    return existFactorisation(n);
+  } catch (err) {
     if (BasicDivisionDefinitions.isPrime(n)) {
       const primeUniqueFactorisation = new Factorisation(n, [n], [1]);
-      I.True(nUniqueFactorisation !== undefined);
-      throw new Error("Contradiction");
+      return primeUniqueFactorisation;
     }
 
     const x = Q.exist();
@@ -490,27 +523,94 @@ function existFactorisation(n: number): Factorisation {
     I.True(n === x * y);
     I.True(x < n);
     I.True(y < n);
-    const uniqueFactorisationOfX = existFactorisation(x);
-    const uniqueFactorisationOfY = existFactorisation(y);
-    I.True(
-      nUniqueFactorisation === uniqueFactorisationOfX * uniqueFactorisationOfY
-    );
-    throw new Error("Contradiction");
+
+    const factorisationOfX = existFactorisation(x);
+    const factorisationOfY = existFactorisation(y);
+    const factorisation = factorisationOfX.compose(factorisationOfY);
+
+    return factorisation; // Contradiction
   }
-
-  I.True(nUniqueFactorisation !== undefined);
-
-  return nUniqueFactorisation;
 }
 
-function existUniqueFactorisation(n: number): Factorisation {
-  const qFactorisation = existFactorisation(n);
-  const pFactorisation = existFactorisation(n);
-  Q.assume(qFactorisation !== pFactorisation);
+function findDividentFactor(
+  q: number,
+  pFactorisation: Factorisation
+): number | null {
+  if (pFactorisation.primes.length === 0) {
+    return null;
+  }
+  const p1 = pFactorisation.primes[0];
+  const dividend = existOneDividesOneOfTheFactorsIFFDividesProduct(
+    new Prime(q),
+    p1,
+    pFactorisation.n / p1
+  );
+
+  if (dividend === p1) {
+    return dividend;
+  } else {
+    pFactorisation.reduce();
+    return findDividentFactor(q, pFactorisation);
+  }
+}
+
+function factorisationsAreEqual(
+  qFactorisation: Factorisation,
+  pFactorisation: Factorisation
+) {
+  if (
+    qFactorisation.primes.length === 0 &&
+    pFactorisation.primes.length === 0
+  ) {
+    return;
+  }
 
   const q1 = qFactorisation.primes[0];
   I.True(BasicDivisionDefinitions.divides(q1, qFactorisation.n));
   I.True(BasicDivisionDefinitions.divides(q1, pFactorisation.n));
+  const pi = findDividentFactor(q1, pFactorisation);
+  if (pi === null) {
+    throw new Error("Contradiction!");
+  }
+  // becasue q1 and pi are primes
+  I.True(q1 === pi);
+  const i = pFactorisation.primes.indexOf(pi);
 
-  // devidesProductIfAndOnlyIfDevidesOneOfThem(q1);
+  if (1 === i) {
+    //q1 === p1
+    //make recursion
+    qFactorisation.reduce();
+    pFactorisation.reduce();
+    factorisationsAreEqual(qFactorisation, pFactorisation);
+  }
+
+  // 1 < i
+  const p1 = pFactorisation.primes[0];
+  I.True(p1 < pi);
+
+  I.True(BasicDivisionDefinitions.divides(p1, qFactorisation.n));
+  I.True(BasicDivisionDefinitions.divides(p1, pFactorisation.n));
+
+  const qj = findDividentFactor(p1, qFactorisation);
+
+  if (qj === null) {
+    throw new Error("Contradiction!");
+  }
+  // becasue q1 and pi are primes
+  I.True(p1 === qj);
+  I.True(qj >= q1);
+  I.True(q1 === pi);
+  I.True(pi > p1);
+  // impossibe
+  I.True(p1 > p1);
+}
+
+function existsUniqueFactorisation(n: number): Factorisation {
+  const qFactorisation = existFactorisation(n);
+  const pFactorisation = existFactorisation(n);
+  Q.assume(qFactorisation !== pFactorisation);
+  factorisationsAreEqual(qFactorisation, pFactorisation);
+
+  //TODO: qFactorisation and pFactorisation were changed!
+  return qFactorisation;
 }
