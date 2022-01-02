@@ -35,3 +35,19 @@ export class BasicDivisionDefinitions {
     return p > 1 && !this.isProperDivisor(divisor, p);
   }
 }
+
+export class Prime {
+  p: number;
+  constructor(p: number) {
+    I.True(BasicDivisionDefinitions.isPrime(p));
+    this.p = p;
+  }
+}
+
+export class PositivePrime {
+  p: number;
+  constructor(p: number) {
+    I.True(BasicDivisionDefinitions.isPrime(p) && p > 0);
+    this.p = p;
+  }
+}
